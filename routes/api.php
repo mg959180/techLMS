@@ -2,7 +2,10 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Secure\UserController as SecureUserController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+
+Route::prefix('secure')->group(function () {
+    Route::post('/check-user-mail', [SecureUserController::class, 'checkMail']);
+    Route::post('/check-user-mobile', [SecureUserController::class, 'checkMobile']);
+});
