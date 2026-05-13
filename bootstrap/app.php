@@ -12,8 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
-    })
-    ->withExceptions(function (Exceptions $exceptions): void {
+        $middleware->alias([
+            'IsAdminLogged' => App\Http\Middleware\IsAdminLogged::class,
+            'IsGuestAdmin' => App\Http\Middleware\IsGuestAdmin::class,
+            'DecryptApiRequest' => App\Http\Middleware\DecryptApiRequest::class,
+            'EncryptApiResponse' => App\Http\Middleware\EncryptApiResponse::class,
+        ]);
+    })->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();

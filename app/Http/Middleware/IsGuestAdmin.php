@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
+
+class IsGuestAdmin
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  Closure(Request): (Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        if (! session()->has('admin_id') && Auth::check()) {
+            session([
+                'admin_id' => Auth::id(),
+                'admin_name' => Auth::user()->name,
+                'admin_email' => Auth::user()->email,
+            ]);
+        }
+
+        if (session()->has('admin_id')) {
+            return redirect()->route('admin.dashboard');
+        }
+        return $next($request);
+    }
+}
