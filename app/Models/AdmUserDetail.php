@@ -3,15 +3,27 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Constants\TableConstant;
+
 
 class AdmUserDetail extends Model
 {
     // The table associated with the model.
-    protected $table = 'adm_user_details';
+    protected $table = TableConstant::ADMIN_USER_DETAIL_TABLE;
     // The attributes that are mass assignable.
-    protected $fillable = ['user_id', 'address', 'phone_number'];
-    // Disable timestamps if not using created_at and updated_at columns
-    public $timestamps = false;
+    protected $fillable = [
+        'user_id',
+        'address',
+        'phone_number',
+        'profile_photo_path',
+        'city',
+        'state',
+        'country',
+        'postal_code',
+        'timezone',
+        'language',
+        'date_of_birth',
+    ];
 
     // Define a relationship to the AdmUser model
     public function user()

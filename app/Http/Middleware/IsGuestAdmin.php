@@ -16,14 +16,6 @@ class IsGuestAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! session()->has('admin_id') && Auth::check()) {
-            session([
-                'admin_id' => Auth::id(),
-                'admin_name' => Auth::user()->name,
-                'admin_email' => Auth::user()->email,
-            ]);
-        }
-
         if (session()->has('admin_id')) {
             return redirect()->route('admin.dashboard');
         }

@@ -2,22 +2,37 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Constants\TableConstant;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class AdmUser extends Model
+class AdmUser extends Authenticatable
 {
+    use Notifiable;
+    use SoftDeletes;
+
     // The table associated with the model.
-    protected $table = 'adm_users';
+    protected $table = TableConstant::ADMIN_TABLE;
     // The attributes that are mass assignable.
     protected $fillable = ['name', 'email', 'password'];
     // The attributes that should be hidden for arrays.
-    protected $hidden = ['password'];
+    protected $hidden = ['password', 'remember_token'];
     // The attributes that should be cast to native types.
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'last_login_at' => 'datetime',
+        'lockout_time' => 'datetime',
+        'account_expires_at' => 'datetime',
+        'locked_at' => 'datetime',
+        'unlocked_at' => 'datetime',
+        'password_expires_at' => 'datetime',
+        'password_last_changed_at' => 'datetime',
+        'account_created_at' => 'datetime',
+        'account_updated_at' => 'datetime',
+        'account_deleted_at' => 'datetime',
+        'password' => 'hashed',
     ];
-    // Disable timestamps if not using created_at and updated_at columns
-    public $timestamps = false;
 
     // Define a relationship to the AdmUserDetail model
     public function details()

@@ -90,6 +90,7 @@
             font-size: 14px;
             line-height: 1.5;
         }
+        .hidden { display: none; }
         .alert-success { color: #0f5132; background: #dff6e8; border: 1px solid #bde8ce; }
         .alert-error { color: #842029; background: #f8d7da; border: 1px solid #f1aeb5; }
         .field { margin-bottom: 18px; }
@@ -114,6 +115,17 @@
         input:focus {
             border-color: #1f7a8c;
             box-shadow: 0 0 0 4px rgba(31, 122, 140, .14);
+        }
+        input.is-invalid {
+            border-color: #c92a2a;
+            box-shadow: 0 0 0 4px rgba(201, 42, 42, .1);
+        }
+        .field-error {
+            min-height: 18px;
+            margin-top: 6px;
+            color: #842029;
+            font-size: 13px;
+            font-weight: 600;
         }
         .form-row {
             display: flex;
@@ -158,6 +170,11 @@
         .submit-btn:hover {
             background: #14596a;
             transform: translateY(-1px);
+        }
+        .submit-btn:disabled {
+            cursor: wait;
+            opacity: .72;
+            transform: none;
         }
         .footer-note {
             margin-top: 26px;
@@ -216,17 +233,19 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('admin.auth') }}">
-                    @csrf
+                <div id="login-message" class="alert alert-error hidden" role="alert"></div>
 
+                <form id="login-form" novalidate>
                     <div class="field">
                         <label for="email">Email address</label>
-                        <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" placeholder="admin@example.com">
+                        <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" placeholder="admin@example.com" aria-describedby="email-error">
+                        <div id="email-error" class="field-error" aria-live="polite"></div>
                     </div>
 
                     <div class="field">
                         <label for="password">Password</label>
-                        <input id="password" type="password" name="password" required autocomplete="current-password" placeholder="Enter your password">
+                        <input id="password" type="password" name="password" required minlength="6" maxlength="10" autocomplete="current-password" placeholder="Enter your password" aria-describedby="password-error">
+                        <div id="password-error" class="field-error" aria-live="polite"></div>
                     </div>
 
                     <div class="form-row">
@@ -238,12 +257,183 @@
                         <a href="{{ route('admin.forget-password') }}">Forgot password?</a>
                     </div>
 
-                    <button class="submit-btn" type="submit">Sign in</button>
+                    <button id="login-submit" class="submit-btn" type="submit">Sign in</button>
                 </form>
 
                 <p class="footer-note">Use your registered admin account to access this area.</p>
             </div>
         </section>
     </main>
+    <script>
+        (() => {
+            const form = document.getElementById('login-form');
+            const submitButton = document.getElementById('login-submit');
+            const messageBox = document.getElementById('login-message');
+            const fields = {
+                email: document.getElementById('email'),
+                password: document.getElementById('password'),
+            };
+            const errors = {
+                email: document.getElementById('email-error'),
+                password: document.getElementById('password-error'),
+            };
+            const loginUrl = @json(route('api.admin.login'));
+            const publicKeyPem = @json($loginPublicKey);
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            const setMessage = (message = '') => {
+                messageBox.textContent = message;
+                messageBox.classList.toggle('hidden', !message);
+            };
+
+            const setFieldError = (field, message = '') => {
+                fields[field].classList.toggle('is-invalid', !!message);
+                fields[field].setAttribute('aria-invalid', message ? 'true' : 'false');
+                errors[field].textContent = message;
+            };
+
+            const validate = () => {
+                let isValid = true;
+                const email = fields.email.value.trim();
+                const password = fields.password.value;
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                setMessage();
+                setFieldError('email');
+                setFieldError('password');
+
+                if (!email) {
+                    setFieldError('email', 'Email address is required.');
+                    isValid = false;
+                } else if (!emailPattern.test(email)) {
+                    setFieldError('email', 'Enter a valid email address.');
+                    isValid = false;
+                }
+
+                if (!password) {
+                    setFieldError('password', 'Password is required.');
+                    isValid = false;
+                } else if (password.length < 6 || password.length > 10) {
+                    setFieldError('password', 'Password must be between 6 and 10 characters.');
+                    isValid = false;
+                }
+
+                return isValid;
+            };
+
+            const pemToArrayBuffer = (pem) => {
+                const base64 = pem
+                    .replace('-----BEGIN PUBLIC KEY-----', '')
+                    .replace('-----END PUBLIC KEY-----', '')
+                    .replace(/\s/g, '');
+                const binary = atob(base64);
+                const bytes = new Uint8Array(binary.length);
+
+                for (let i = 0; i < binary.length; i += 1) {
+                    bytes[i] = binary.charCodeAt(i);
+                }
+
+                return bytes.buffer;
+            };
+
+            const arrayBufferToBase64 = (buffer) => {
+                const bytes = new Uint8Array(buffer);
+                let binary = '';
+
+                for (let i = 0; i < bytes.byteLength; i += 1) {
+                    binary += String.fromCharCode(bytes[i]);
+                }
+
+                return btoa(binary);
+            };
+
+            const secureContextMessage = () => {
+                const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+
+                if (!window.isSecureContext && !isLocalhost) {
+                    return 'Browser encryption requires HTTPS. For local development, open the site on localhost or enable HTTPS for this domain.';
+                }
+
+                return 'Secure browser encryption is not available in this browser. Please use a current Chrome, Edge, Firefox, or Safari.';
+            };
+
+            const hasSecureBrowserEncryption = () => window.isSecureContext
+                && !!window.crypto?.subtle
+                && typeof TextEncoder !== 'undefined';
+
+            const encryptCredentials = async (credentials) => {
+                if (!hasSecureBrowserEncryption()) {
+                    throw new Error(secureContextMessage());
+                }
+
+                const key = await window.crypto.subtle.importKey(
+                    'spki',
+                    pemToArrayBuffer(publicKeyPem),
+                    { name: 'RSA-OAEP', hash: 'SHA-1' },
+                    false,
+                    ['encrypt']
+                );
+
+                const encoded = new TextEncoder().encode(JSON.stringify(credentials));
+                const encrypted = await window.crypto.subtle.encrypt({ name: 'RSA-OAEP' }, key, encoded);
+
+                return arrayBufferToBase64(encrypted);
+            };
+
+            const setLoading = (isLoading) => {
+                submitButton.disabled = isLoading;
+                submitButton.textContent = isLoading ? 'Signing in...' : 'Sign in';
+            };
+
+            if (!hasSecureBrowserEncryption()) {
+                setMessage(secureContextMessage());
+            }
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                if (!validate()) {
+                    return;
+                }
+
+                setLoading(true);
+
+                try {
+                    const payload = await encryptCredentials({
+                        email: fields.email.value.trim(),
+                        password: fields.password.value,
+                        remember: document.getElementById('remember').checked,
+                    });
+
+                    const response = await fetch(loginUrl, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body: JSON.stringify({ payload }),
+                    });
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        setMessage(result.message || 'Unable to sign in. Please try again.');
+                        return;
+                    }
+
+                    window.location.assign(result.redirect);
+                } catch (error) {
+                    setMessage(error.message || 'Unable to sign in. Please try again.');
+                } finally {
+                    setLoading(false);
+                }
+            });
+
+            Object.values(fields).forEach((field) => {
+                field.addEventListener('input', () => validate());
+            });
+        })();
+    </script>
 </body>
 </html>

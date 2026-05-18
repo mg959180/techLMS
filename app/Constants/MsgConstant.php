@@ -1,0 +1,63 @@
+<?php
+namespace App\Constants;
+class MsgConstant
+{
+    const USER_CREATED = 'User created successfully.';
+    const USER_UPDATED = 'User updated successfully.';
+    const USER_DELETED = 'User deleted successfully.';
+    const USER_NOT_FOUND = 'User not found.';
+    const INVALID_DATA = 'Invalid data provided.';
+    const UNAUTHORIZED = 'Unauthorized access.';
+    const FORBIDDEN = 'Forbidden action.';
+    const SERVER_ERROR = 'An error occurred on the server.';
+    const LOGIN_SUCCESS = 'Login successful.';
+    const LOGIN_FAILED = 'Login failed. Please check your credentials.';
+    const LOGOUT_SUCCESS = 'Logout successful.';
+    const PASSWORD_RESET_SUCCESS = 'Password reset successful.';
+    const PASSWORD_RESET_FAILED = 'Password reset failed. Please try again.';
+    const ACCOUNT_LOCKED = 'Your account has been locked. Please contact support.';
+    const ACCOUNT_INACTIVE = 'Your account is inactive. Please contact support.';
+    const ACCOUNT_EXPIRED = 'Your account has expired. Please contact support.';
+    const ACCOUNT_DELETED = 'Your account has been deleted. Please contact support.';
+    const INVALID_TOKEN = 'Invalid token provided.';
+    const TOKEN_EXPIRED = 'Token has expired. Please login again.';
+    const PERMISSION_DENIED = 'You do not have permission to perform this action.';
+    const RESOURCE_NOT_FOUND = 'The requested resource was not found.';
+    const OPERATION_SUCCESS = 'Operation completed successfully.';
+    const OPERATION_FAILED = 'Operation failed. Please try again.';
+    const VALIDATION_ERROR = 'Validation error. Please check your input.';
+    const DUPLICATE_ENTRY = 'Duplicate entry. Please check your input.';
+    const DATA_SAVED = 'Data saved successfully.';
+    const DATA_UPDATED = 'Data updated successfully.';
+    const DATA_DELETED = 'Data deleted successfully.';
+    const DATA_NOT_FOUND = 'Data not found.';
+    const INVALID_REQUEST = 'Invalid request. Please check your input.';
+    const SERVER_BUSY = 'The server is currently busy. Please try again later.';
+    const SERVICE_UNAVAILABLE = 'The service is currently unavailable. Please try again later.';
+    const MAINTENANCE_MODE = 'The system is currently under maintenance. Please try again later.';
+    const UNKNOWN_ERROR = 'An unknown error occurred. Please try again.';
+    const SUCCESS = 'Success.';
+    const FAILURE = 'Failure.';
+    const ERROR = 'Error.';
+    const WARNING = 'Warning.';
+    const INFO = 'Information.';
+    const CONFIRMATION_REQUIRED = 'Confirmation required to proceed.';
+    const INVALID_CREDENTIALS = 'Invalid credentials provided.';
+    const ACCOUNT_ALREADY_EXISTS = 'An account with this email already exists.';
+    const ACCOUNT_CREATED = 'Account created successfully. Please check your email for verification.';
+    const ACCOUNT_VERIFIED = 'Account verified successfully. You can now login.';
+    const ACCOUNT_VERIFICATION_FAILED = 'Account verification failed. Please check your verification link.';
+    const PASSWORD_CHANGED = 'Password changed successfully.';
+    const PASSWORD_CHANGE_FAILED = 'Password change failed. Please try again.';
+    const PASSWORD_RESET_LINK_SENT = 'A password reset link has been sent to your email.';
+    const PASSWORD_RESET_LINK_FAILED = 'Failed to send password reset link. Please try again.';
+    const EMAIL_VERIFICATION_SENT = 'A verification email has been sent to your email address.';
+    const EMAIL_VERIFICATION_FAILED = 'Failed to send verification email. Please try again.';
+    const PROFILE_UPDATED = 'Profile updated successfully.';
+    const PROFILE_UPDATE_FAILED = 'Profile update failed. Please try again.';
+    const AVATAR_UPLOADED = 'Avatar uploaded successfully.';
+    const AVATAR_UPLOAD_FAILED = 'Avatar upload failed. Please try again.';
+    const SETTINGS_SAVED = 'Settings saved successfully.';
+    const SETTINGS_SAVE_FAILED = 'Failed to save settings. Please try again.';
+
+}

@@ -3,14 +3,22 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\LogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LogoutController extends Controller
 {
-    public function logout(Request $request)
+    public function logout(Request $request, LogService $logs)
     {
-        Auth::logout();
+        $admin = Auth::guard('admin')->user();
+
+        Auth::guard('admin')->logout();
+
+        $logs->adminActivity('Admin logout successful.', $request, [
+            'admin_id' => $admin?->id,
+            'email' => $admin?->email,
+        ]);
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
